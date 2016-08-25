@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Homework assignment sheets
+6330*HW#*.pdf
