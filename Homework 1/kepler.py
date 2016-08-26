@@ -6,6 +6,7 @@ import numpy as np
 # Gravitational parameter
 mu = 3.98600436e5  # km^3/s^2
 
+names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
 
 def rvToElements(Rvec, Vvec):
     """Computes the Keplerian orbital elements of an Earth satellite
@@ -138,25 +139,23 @@ def main():
     # First case
     R = [-1020.9884199769, 4110.9705239038,  5931.5781229624]    # km
     V = [-5.71571324, -4.50160713, 2.57194489]                   # km/sec
-    a1, e1, i1, Omega1, omega1, nu1 = rvToElements(R, V)
+    elements1 = rvToElements(R, V)
 
     # Second case
     R = [8948.76740168, -3214.34029976, -663.27465526]   # km
     V = [-2.27456408, - 5.99222926, -0.77384874]         # km/sec
-    a2, e2, i2, Omega2, omega2, nu2 = rvToElements(R, V)
+    elements2 = rvToElements(R, V)
 
     print ' elem        First Case               Second Case'
-    print ' -----    -----------------        -----------------'
-    print ' {:5s}    {:13.8f} km         {:13.8f} km'.format('a', a1, a2)
-    print ' {:5s}    {:13.8f}            {:13.8f}'.format('e', e1, e2)
-    print ' {:5s}    {:13.8f} deg        {:13.8f} deg'.format('i', i1, i2)
-    print ' {:5s}    {:13.8f} deg        {:13.8f} deg'.format('Omega', Omega1, Omega2)
-    print ' {:5s}    {:13.8f} deg        {:13.8f} deg'.format('omega', omega1, omega2)
-    print ' {:5s}    {:13.8f} deg        {:13.8f} deg'.format('nu', nu1, nu2)
+    print ' -----    -----------------      -----------------'
+
+    units = ['km', ''] + 4*['deg']
+    for outputs in zip(names, elements1, units, elements2, units):
+        print ' {:5s}{:17.8f} {:3s}{:20.8f} {:3s}'.format(*outputs)
 
     # Second problem
-    print '\n Second Problem'
-    print ' ============='
+    print '\n                     Second Problem'
+    print ' ======================================================'
     # First case
     a = 9000.0      # km
     e = 0.050
@@ -173,8 +172,8 @@ def main():
     Omega = 199.0   # deg
     omega = 310.0   # deg
     nu = 206.0      # deg
-    elementsToRV(a, e, i, Omega, omega, nu)
     R2, V2 = elementsToRV(a, e, i, Omega, omega, nu)
+
     print ' First Case'
     print ' ----------'
     print ' {:s}:  [ {:14.8f}  {:14.8f}  {:14.8f} ]'.format('R', *R1)
@@ -187,56 +186,68 @@ def main():
 
 
 def test():
+
     # First problem
-    print 'Error in First Problem'
-    print '======================'
+    print '            Error Check for First Problem'
+    print '======================================================'
+
     # First case
-    R1 = [-1020.9884199769, 4110.9705239038,  5931.5781229624]    # km
-    V1 = [-5.71571324, -4.50160713, 2.57194489]                   # km/sec
-    R1b, V1b = elementsToRV(*rvToElements(R1, V1))
+    R = [-1020.9884199769, 4110.9705239038,  5931.5781229624]    # km
+    V = [-5.71571324, -4.50160713, 2.57194489]                   # km/sec
+    R1, V1 = elementsToRV(*rvToElements(R, V))
+    Rdiff1 = R1 - R
+    Vdiff1 = V1 - V
 
     # Second case
-    R2 = [8948.76740168, -3214.34029976, -663.27465526]   # km
-    V2 = [-2.27456408, - 5.99222926, -0.77384874]         # km/sec
-    R2b, V2b = elementsToRV(*rvToElements(R2, V2))
+    R = [8948.76740168, -3214.34029976, -663.27465526]   # km
+    V = [-2.27456408, - 5.99222926, -0.77384874]         # km/sec
+    R2, V2 = elementsToRV(*rvToElements(R, V))
+    Rdiff2 = R2 - R
+    Vdiff2 = V2 - V
+
     print 'First Case'
     print '----------'
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *(R1b - R1))
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *(V1b - V1))
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rdiff1)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Vdiff1)
 
     print '\nSecond Case'
     print '-----------'
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *(R2b - R2))
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *(V2b - V2))
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rdiff2)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Vdiff2)
 
     # Second problem
-    print '\n            Error in Second Problem'
-    print '            ======================='
+    print '\n     Error Check for Second Problem'
+    print '=========================================='
+
     # First case
-    a1 = 9000.0      # km
-    e1 = 0.050
-    i1 = 40.0        # deg
-    Omega1 = 45.0    # deg
-    omega1 = 50.0    # deg
-    nu1 = 20.0       # deg
-    a1b, e1b, i1b, Omega1b, omega1b, nu1b = rvToElements(*elementsToRV(a1, e1, i1, Omega1, omega1, nu1))
+    a = 9000.0      # km
+    e = 0.050
+    i = 40.0        # deg
+    Omega = 45.0    # deg
+    omega = 50.0    # deg
+    nu = 20.0       # deg
+
+    elements = [a, e, i, Omega, omega, nu]
+    elements1 = rvToElements(*elementsToRV(*elements))
+    diffs1 = [el1 - el for el1, el in zip(elements1, elements)]
 
     # Second case
-    a2 = 9400.0      # km
-    e2 = 0.015
-    i2 = 164.0       # deg
-    Omega2 = 199.0   # deg
-    omega2 = 310.0   # deg
-    nu2 = 206.0      # deg
-    a2b, e2b, i2b, Omega2b, omega2b, nu2b = rvToElements(*elementsToRV(a2, e2, i2, Omega2, omega2, nu2))
+    a = 9400.0      # km
+    e = 0.015
+    i = 164.0       # deg
+    Omega = 199.0   # deg
+    omega = 310.0   # deg
+    nu = 206.0      # deg
+
+    elements = [a, e, i, Omega, omega, nu]
+    elements2 = rvToElements(*elementsToRV(*elements))
+    diffs2 = [el2 - el for el2, el in zip(elements2, elements)]
+
     print '          First Case         Second Case'
     print '        --------------     --------------'
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('a', a1b-a1, a2b-a2)
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('e', e1b-e1, e2b-e2)
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('i', i1b-i1, i2b-i2)
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('Omega', Omega1b-Omega1, Omega2b-Omega2)
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('omega', omega1b-omega1, omega2b-omega2)
-    print '{:5s}   {:14.8g}      {:14.8g}'.format('nu', nu1b-nu1, nu2b-nu2)
+    for el, diff1, diff2 in zip(names, diffs1, diffs2):
+        print '{:5s}   {:14.8g}      {:14.8g}'.format(el, diff1, diff2)
+
 
 if __name__ == "__main__":
     main()
