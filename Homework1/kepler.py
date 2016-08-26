@@ -9,9 +9,9 @@ mu = 3.98600436e5  # km^3/s^2
 names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
 
 def rvToElements(Rvec, Vvec):
-    """Computes the Keplerian orbital elements of an Earth satellite
-    using the geocentric-equatorial position and velocity vectors
-    of the orbiting body.
+    """Computes the Keplerian orbital elements of an Earth
+    satellite using the geocentric-equatorial position and
+    velocity vectors of the orbiting body.
 
     :Rvec:  position vector to orbiting body
     :Vvec:  velocity vector of orbiting body
@@ -87,8 +87,9 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     from numpy import sin, cos
 
     def transformationMatrix(i, Omega, omega):
-        """Generates matrix for transformation from perifocal coordinate
-        system to geocentric-equatorial coordinate system.
+        """Generates matrix for transformation from perifocal
+        coordinate system to geocentric-equatorial coordinate
+        system.
         Note: All angles MUST be in RADIANS
 
         :i:     inclination
