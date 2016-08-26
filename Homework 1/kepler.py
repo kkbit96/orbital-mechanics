@@ -195,25 +195,25 @@ def test():
     R = [-1020.9884199769, 4110.9705239038,  5931.5781229624]    # km
     V = [-5.71571324, -4.50160713, 2.57194489]                   # km/sec
     R1, V1 = elementsToRV(*rvToElements(R, V))
-    Rdiff1 = R1 - R
-    Vdiff1 = V1 - V
+    Rerr1 = R1 - R
+    Verr1 = V1 - V
 
     # Second case
     R = [8948.76740168, -3214.34029976, -663.27465526]   # km
     V = [-2.27456408, - 5.99222926, -0.77384874]         # km/sec
     R2, V2 = elementsToRV(*rvToElements(R, V))
-    Rdiff2 = R2 - R
-    Vdiff2 = V2 - V
+    Rerr2 = R2 - R
+    Verr2 = V2 - V
 
     print 'First Case'
     print '----------'
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rdiff1)
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Vdiff1)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rerr1)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Verr1)
 
     print '\nSecond Case'
     print '-----------'
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rdiff2)
-    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Vdiff2)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('R', *Rerr2)
+    print '{:s}:  [ {:14.8g}  {:14.8g}  {:14.8g} ]'.format('V', *Verr2)
 
     # Second problem
     print '\n     Error Check for Second Problem'
@@ -229,7 +229,7 @@ def test():
 
     elements = [a, e, i, Omega, omega, nu]
     elements1 = rvToElements(*elementsToRV(*elements))
-    diffs1 = [el1 - el for el1, el in zip(elements1, elements)]
+    errs1 = [el1 - el for el1, el in zip(elements1, elements)]
 
     # Second case
     a = 9400.0      # km
@@ -241,12 +241,12 @@ def test():
 
     elements = [a, e, i, Omega, omega, nu]
     elements2 = rvToElements(*elementsToRV(*elements))
-    diffs2 = [el2 - el for el2, el in zip(elements2, elements)]
+    errs2 = [el2 - el for el2, el in zip(elements2, elements)]
 
     print '          First Case         Second Case'
     print '        --------------     --------------'
-    for el, diff1, diff2 in zip(names, diffs1, diffs2):
-        print '{:5s}   {:14.8g}      {:14.8g}'.format(el, diff1, diff2)
+    for el, err1, err2 in zip(names, errs1, errs2):
+        print '{:5s}   {:14.8g}      {:14.8g}'.format(el, err1, err2)
 
 
 if __name__ == "__main__":
