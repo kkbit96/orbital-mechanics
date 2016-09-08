@@ -115,5 +115,29 @@ if __name__ == "__main__":
 
     t, r, v = rk44(fun, ti=ti, ri=ri, vi=vi, tf=tf, h=h)
 
-    print 'r = [{:.10f}  {:.10f}  {:.10f}]'.format(*r)
-    print 'v = [{:.10f}  {:.10f}  {:.10f}]'.format(*v)
+    print 'Runge-Kutta solution (RK44)'
+    print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*r)
+    print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*v)
+
+    ## exact solution
+    # coefficients
+    c1 = np.array([2, 1, 3])
+    c2 = np.array([1, 1, -2])
+
+    # computation of exact solution
+    re = (c1 + c2*tf)*np.exp(tf)
+    ve = ((c1 + c2) + c2*tf)*np.exp(tf)
+
+    print
+    print 'Exact Solution'
+    print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*re)
+    print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*ve)
+
+    # error calculation
+    rerr = r - re
+    verr = v - ve
+
+    print
+    print 'Runge-Kutta error (RK44 - Exact)'
+    print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*rerr)
+    print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*verr)
