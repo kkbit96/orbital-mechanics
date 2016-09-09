@@ -142,5 +142,5 @@ if __name__ == "__main__":
     verr = v - ve
 
     print '\nRunge-Kutta error (RK44 - Exact)'
-    print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*rerr)
-    print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*verr)
+    print 'r = [{:14.10g}  {:14.10g}  {:14.10g} ]'.format(*rerr)
+    print 'v = [{:14.10g}  {:14.10g}  {:14.10g} ]'.format(*verr)
