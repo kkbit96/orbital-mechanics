@@ -47,13 +47,13 @@ def step(fun, ti, ri, vi, h):
     # weights of k's for rk44
     wts = [1, 2, 2, 1]
 
+    # compute velocity, use numpy's dot product to compute weighted sum
     v = vi + np.dot(k, wts)/6
 
+    # compute position
     r = ri + h*vi + (h/6)*sum(k[:-1])
 
-    t = ti + h
-
-    return t, r, v
+    return r, v
 
 def rk44(fun, ti, ri, vi, tf, h=0.01):
     """Performs Runge-Kutta integration for second order ODE.
@@ -65,6 +65,7 @@ def rk44(fun, ti, ri, vi, tf, h=0.01):
     :tf: final evaluation time
     :h: time step
     :returns:
+        :t: final time value
         :r: final position at tf
         :v: final velocity at tf
 
@@ -72,26 +73,28 @@ def rk44(fun, ti, ri, vi, tf, h=0.01):
     """
     # check to see if ri and vi are iterable
     if hasattr(ri, '__iter__') and hasattr(vi, '__iter__'):
+        # initialize t, r, v with initial conditions
         t, r, v = ti, ri, vi
         isVector = True
 
     else:
-        # create one-element iterable for loop
+        # initialize t, r, v with initial conditions, creating
+        #   one-element iterables for r, v for loop structure
         t, r, v = ti, [ri], [vi]
         isVector = False
 
     # step until time reaches final time
     while t < tf:
 
-        # define time step
-        tstep = t
-
-        # define dt for step (for last step < h)
+        # allow for h to change to ensure time stops at tf (if necessary)
         hstep = min(h, tf-t)
 
         # loop over all elements in r and v
         for i in xrange(len(r)):
-            t, r[i], v[i] = step(fun, tstep, r[i], v[i], hstep)
+            r[i], v[i] = step(fun, t, r[i], v[i], hstep)
+
+        # increment time step
+        t += h
 
     if isVector:
         return t, r, v
@@ -113,27 +116,32 @@ if __name__ == "__main__":
     tf = 0.2
     h = 0.01
 
+    #########################  rk44 solution #########################
+    # call rk44 routine, store solution in t, r, v
     t, r, v = rk44(fun, ti=ti, ri=ri, vi=vi, tf=tf, h=h)
 
-    print 'Runge-Kutta solution (RK44)'
+    print 'Runge-Kutta solution (RK44), t = {}'.format(t)
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*r)
     print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*v)
 
-    ## exact solution
-    # coefficients
-    c1 = np.array([2, 1, 3])
-    c2 = np.array([1, 1, -2])
+    ######################### exact solution #########################
+    ## coefficients
+    # at ti = 0, c1 = ri
+    c1 = np.array(ri)
+
+    # at ti = 0, c2 = vi - ri
+    c2 = np.array(vi) - ri
 
     # computation of exact solution
     re = (c1 + c2*tf)*np.exp(tf)
     ve = ((c1 + c2) + c2*tf)*np.exp(tf)
 
     print
-    print 'Exact Solution'
+    print 'Exact Solution, t = {}'.format(tf)
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*re)
     print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*ve)
 
-    # error calculation
+    ######################## error calculation ########################
     rerr = r - re
     verr = v - ve
 
