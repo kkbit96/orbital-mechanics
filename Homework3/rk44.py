@@ -26,7 +26,6 @@ def compute_k(fun, ti, ri, vi, h):
 
     return k
 
-
 def step(fun, ti, ri, vi, h):
     """Performs a single step of rk44 integration for second order ode.
 
@@ -41,7 +40,6 @@ def step(fun, ti, ri, vi, h):
         :v: final velocity at tf
 
     """
-
     k = compute_k(fun, ti, ri, vi, h)
 
     # weights of k's for rk44
@@ -68,7 +66,6 @@ def rk44(fun, ti, ri, vi, tf, h=0.01):
         :t: final time value
         :r: final position at tf
         :v: final velocity at tf
-
 
     """
     # check to see if ri and vi are iterable
@@ -120,7 +117,7 @@ if __name__ == "__main__":
     # call rk44 routine, store solution in t, r, v
     t, r, v = rk44(fun, ti=ti, ri=ri, vi=vi, tf=tf, h=h)
 
-    print 'Runge-Kutta solution (RK44), t = {}'.format(t)
+    print '\nRunge-Kutta solution (RK44), t = {}'.format(t)
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*r)
     print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*v)
 
@@ -136,8 +133,7 @@ if __name__ == "__main__":
     re = (c1 + c2*tf)*np.exp(tf)
     ve = ((c1 + c2) + c2*tf)*np.exp(tf)
 
-    print
-    print 'Exact Solution, t = {}'.format(tf)
+    print '\nExact Solution, t = {}'.format(tf)
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*re)
     print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*ve)
 
@@ -145,7 +141,6 @@ if __name__ == "__main__":
     rerr = r - re
     verr = v - ve
 
-    print
-    print 'Runge-Kutta error (RK44 - Exact)'
+    print '\nRunge-Kutta error (RK44 - Exact)'
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*rerr)
     print 'v = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*verr)
