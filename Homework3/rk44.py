@@ -21,8 +21,8 @@ def compute_k(fun, ti, ri, vi, h):
     # compute values for k from fun = f(ti, ri, vi)
     k.append(h*fun(ti, ri, vi))
     k.append(h*fun(ti+h/2, ri+(h/2)*vi, vi+k[-1]/2))
-    k.append(h*fun(ti+h/2, ri+(h/2)*vi+k[-2]/4, vi+k[-1]/2))
-    k.append(h*fun(ti+h, ri+h*vi+k[-2]/2, vi+k[-1]))
+    k.append(h*fun(ti+h/2, ri+(h/2)*vi+(h*k[-2]/4), vi+k[-1]/2))
+    k.append(h*fun(ti+h, ri+h*vi+(h*k[-2]/2), vi+k[-1]))
 
     return k
 
