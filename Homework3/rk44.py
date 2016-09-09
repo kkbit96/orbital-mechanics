@@ -74,7 +74,7 @@ def rk44(fun, ti, ri, vi, tf, h=0.01):
     # check to see if ri and vi are iterable
     if hasattr(ri, '__iter__') and hasattr(vi, '__iter__'):
         # initialize t, r, v with initial conditions
-        t, r, v = ti, ri, vi
+        t, r, v = ti, list(ri), list(vi)
         isVector = True
 
     else:
