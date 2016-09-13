@@ -3,7 +3,8 @@
 from __future__ import division
 import numpy as np
 
-def compute_k(fun, ti, ri, vi, h):
+
+def __compute_k(fun, ti, ri, vi, h):
     """Computes the k values for the rk44 method.
 
     :fun: function for second order ODE
@@ -26,7 +27,8 @@ def compute_k(fun, ti, ri, vi, h):
 
     return k
 
-def step(fun, ti, ri, vi, h):
+
+def __step(fun, ti, ri, vi, h):
     """Performs a single step of rk44 integration for second order ode.
 
     :fun: ODE function, must be in the form of f(t, r, v)
@@ -40,7 +42,7 @@ def step(fun, ti, ri, vi, h):
         :v: final velocity at tf
 
     """
-    k = compute_k(fun, ti, ri, vi, h)
+    k = __compute_k(fun, ti, ri, vi, h)
 
     # weights of k's for rk44
     wts = [1, 2, 2, 1]
@@ -52,6 +54,7 @@ def step(fun, ti, ri, vi, h):
     r = ri + h*vi + (h/6)*sum(k[:-1])
 
     return r, v
+
 
 def rk44(fun, ti, ri, vi, tf, h=0.01):
     """Performs Runge-Kutta integration for second order ODE.
@@ -88,7 +91,7 @@ def rk44(fun, ti, ri, vi, tf, h=0.01):
 
         # loop over all elements in r and v
         for i in xrange(len(r)):
-            r[i], v[i] = step(fun, t, r[i], v[i], hstep)
+            r[i], v[i] = __step(fun, t, r[i], v[i], hstep)
 
         # increment time step
         t += h

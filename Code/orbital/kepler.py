@@ -2,11 +2,18 @@
 
 import numpy as np
 
-
 # Gravitational parameter
 mu = 3.98600436e5  # km^3/s^2
 
-names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
+
+def __test_angle(test, angle):
+    """Checks test for sign and returns corrected angle"""
+    angle *= 180./np.pi
+    if test > 0:
+        return angle
+    elif test < 0:
+        return 360. - angle
+
 
 def rvToElements(Rvec, Vvec):
     """Computes the Keplerian orbital elements of an Earth
@@ -25,13 +32,6 @@ def rvToElements(Rvec, Vvec):
     """
     from numpy.linalg import norm
 
-    def testAngle(test, angle):
-        """Checks test for sign and returns corrected angle"""
-        angle *= 180./np.pi
-        if test > 0:
-            return angle
-        elif test < 0:
-            return 360. - angle
 
     Rvec = np.array(Rvec)
     Vvec = np.array(Vvec)
@@ -56,17 +56,48 @@ def rvToElements(Rvec, Vvec):
     Nvec = np.array([-hVec[1], hVec[0], 0])
     N = norm(Nvec)
     OmegaPi = np.arccos(-hVec[1]/N)
-    Omega = testAngle(Nvec[1], OmegaPi)
+    Omega = __test_angle(Nvec[1], OmegaPi)
 
     # Computation of omega (argument of periapsis)
     omegaPi = np.arccos(Nvec.dot(eVec)/(N*e))
-    omega = testAngle(eVec[2], omegaPi)
+    omega = __test_angle(eVec[2], omegaPi)
 
     # Computation of nu (true anomaly)
     nuPi = np.arccos(eVec.dot(Rvec)/(e*R))
-    nu = testAngle(Rvec.dot(Vvec), nuPi)
+    nu = __test_angle(Rvec.dot(Vvec), nuPi)
 
     return a, e, i, Omega, omega, nu
+
+
+def __transformationMatrix(i, Omega, omega):
+    """Generates matrix for transformation from perifocal
+    coordinate system to geocentric-equatorial coordinate
+    system.
+    Note: All angles MUST be in RADIANS
+
+    :i:     inclination
+    :Omega: longitude of ascending node
+    :omega: argument of periapsis
+    :returns: Transformation Matrix
+
+    """
+    from numpy import sin, cos
+
+    T = np.zeros((3, 3))
+
+    T[0, 0] =  cos(Omega)*cos(omega) - sin(Omega)*sin(omega)*cos(i)
+    T[0, 1] = -cos(Omega)*sin(omega) - sin(Omega)*cos(omega)*cos(i)
+    T[0, 2] =  sin(Omega)*sin(i)
+
+    T[1, 0] =  sin(Omega)*cos(omega) + cos(Omega)*sin(omega)*cos(i)
+    T[1, 1] = -sin(Omega)*sin(omega) + cos(Omega)*cos(omega)*cos(i)
+    T[1, 2] = -cos(Omega)*sin(i)
+
+    T[2, 0] =  sin(omega)*sin(i)
+    T[2, 1] =  cos(omega)*sin(i)
+    T[2, 2] =  cos(i)
+
+    return T
 
 
 def elementsToRV(a, e, i, Omega, omega, nu):
@@ -84,36 +115,6 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     :Rvec:  position vector to orbiting body
     :Vvec:  velocity vector of orbiting body
     """
-    from numpy import sin, cos
-
-    def transformationMatrix(i, Omega, omega):
-        """Generates matrix for transformation from perifocal
-        coordinate system to geocentric-equatorial coordinate
-        system.
-        Note: All angles MUST be in RADIANS
-
-        :i:     inclination
-        :Omega: longitude of ascending node
-        :omega: argument of periapsis
-        :returns: Transformation Matrix
-
-        """
-        T = np.zeros((3, 3))
-
-        T[0, 0] =  cos(Omega)*cos(omega) - sin(Omega)*sin(omega)*cos(i)
-        T[0, 1] = -cos(Omega)*sin(omega) - sin(Omega)*cos(omega)*cos(i)
-        T[0, 2] =  sin(Omega)*sin(i)
-
-        T[1, 0] =  sin(Omega)*cos(omega) + cos(Omega)*sin(omega)*cos(i)
-        T[1, 1] = -sin(Omega)*sin(omega) + cos(Omega)*cos(omega)*cos(i)
-        T[1, 2] = -cos(Omega)*sin(i)
-
-        T[2, 0] =  sin(omega)*sin(i)
-        T[2, 1] =  cos(omega)*sin(i)
-        T[2, 2] =  cos(i)
-
-        return T
-
     # Conversion of angles from degrees to radians
     i *= np.pi/180.
     Omega *= np.pi/180.
@@ -121,11 +122,11 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     nu *= np.pi/180.
 
     p = a*(1 - e**2)
-    r = p/(1 + e*cos(nu))
-    rVec = r*np.array([cos(nu), sin(nu), 0])
-    vVec = np.sqrt(mu/p)*np.array([-sin(nu), e + cos(nu), 0])
+    r = p/(1 + e*np.cos(nu))
+    rVec = r*np.array([np.cos(nu), np.sin(nu), 0])
+    vVec = np.sqrt(mu/p)*np.array([-np.sin(nu), e + np.cos(nu), 0])
 
-    T = transformationMatrix(i, Omega, omega)
+    T = __transformationMatrix(i, Omega, omega)
 
     Rvec = T.dot(rVec)
     Vvec = T.dot(vVec)
@@ -133,7 +134,9 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     return Rvec, Vvec
 
 
-def main():
+def __main():
+    names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
+
     # First problem
     print '                  First Problem'
     print ' =================================================='
@@ -186,7 +189,8 @@ def main():
     print ' {:s}:  [ {:14.8f}  {:14.8f}  {:14.8f} ]'.format('V', *V2)
 
 
-def test():
+def __test():
+    names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
 
     # First problem
     print '            Error Check for First Problem'
@@ -251,6 +255,6 @@ def test():
 
 
 if __name__ == "__main__":
-    main()
+    __main()
     print '\n\n'
-    test()
+    __test()
