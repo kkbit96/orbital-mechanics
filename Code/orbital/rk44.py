@@ -4,28 +4,28 @@ from __future__ import division
 import numpy as np
 
 
-def __compute_k(fun, t, v, h):
+def __compute_k(fun, ti, vi, h):
     """Computes the k values for the rk44 method.
 
     :fun: ODE function, must be in the form of f(t, v), return v
-    :t: time for previous iteration
-    :v: previous time step values (in iterable form)
+    :ti: time for previous iteration
+    :vi: previous time step values (in iterable form)
     :h: time step
     :returns:
         :k: array of k values (two-dimensional numpy array)
 
     """
     # convert to numpy array
-    v = np.array(v)
+    vi = np.array(vi)
 
     # initialize k
     k = []
 
     # compute values for k from fun = f(ti, vi)
-    k.append(h*np.array(fun(t, v)))
-    k.append(h*np.array(fun(t+h/2, v+k[-1]/2)))
-    k.append(h*np.array(fun(t+h/2, v+k[-1]/2)))
-    k.append(h*np.array(fun(t+h, v+k[-1])))
+    k.append(h*np.array(fun(ti, vi)))
+    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2)))
+    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2)))
+    k.append(h*np.array(fun(ti+h, vi+k[-1])))
 
     return np.array(k).T
 
@@ -34,8 +34,8 @@ def __step(fun, ti, vi, h):
     """Performs a single step of rk44 integration for second order ode.
 
     :fun: ODE function, must be in the form of f(t, v)
-    :t: time at start of time step
-    :v: values at start of time step (in iterable form)
+    :ti: time at start of time step
+    :vi: values at start of time step (in iterable form)
     :h: time step
     :returns:
         :t: time at end of time step
