@@ -73,7 +73,7 @@ def __transformationMatrix(i, Omega, omega):
     """Generates matrix for transformation from perifocal
     coordinate system to geocentric-equatorial coordinate
     system.
-    Note: All angles MUST be in RADIANS
+    Note: All angles MUST be in DEGREES
 
     :i:     inclination
     :Omega: longitude of ascending node
@@ -82,6 +82,10 @@ def __transformationMatrix(i, Omega, omega):
 
     """
     from numpy import sin, cos
+
+    i *= np.pi/180.
+    Omega *= np.pi/180.
+    omega *= np.pi/180.
 
     T = np.zeros((3, 3))
 
@@ -116,9 +120,6 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     :Vvec:  velocity vector of orbiting body
     """
     # Conversion of angles from degrees to radians
-    i *= np.pi/180.
-    Omega *= np.pi/180.
-    omega *= np.pi/180.
     nu *= np.pi/180.
 
     p = a*(1 - e**2)
