@@ -30,7 +30,7 @@ def __compute_k(fun, ti, vi, h):
     return np.array(k).T
 
 
-def __step(fun, ti, vi, h):
+def step(fun, ti, vi, h):
     """Performs a single step of rk44 integration for second order ode.
 
     :fun: ODE function, must be in the form of f(t, v)
@@ -80,7 +80,7 @@ def rk44(fun, ti, vi, tf, h=0.01):
         # allow for h to change to ensure time stops at tf (if necessary)
         hstep = min(h, tf-t)
 
-        t, v = __step(fun, t, v, hstep)
+        t, v = step(fun, t, v, hstep)
 
     return t, v
 

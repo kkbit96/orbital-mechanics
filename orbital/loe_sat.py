@@ -1,26 +1,45 @@
 #!/usr/bin/python
 
 import numpy as np
-        return v
-def update_orbit(Ri, Vi, ti, tf, h, output=None):
-    """Updates Keplerian orbit position
 
-    :Ri: Position vector at time ti
-    :Vi: Velocity vector at time ti
-    :ti: Time for initial position and velocity vectors
-    :tf: Computation end time
-    :h: Time step
-    :returns:
-        :R: Position vector at time tf
-        :V: Velocity vector at time tf
+import rk44
+import kepler
+from kepler import mu
 
-    """
-    from numpy.linalg import norm
-    from kepler import mu
-    from rk44 import rk44, __step
+class LOE_Satellite(object):
 
-    # equation for acceleration: d2r/dt2 = -(mu/|r|^3)*r
-    def accel(t, vi):
+    """LOE_Satellite is a class that maintains the current position and
+    velocity vectors as well as the orbital elements for a low earth satellite."""
+
+    def __init__(self, a, e, i, Omega, omega, nu, ti=0, output=None):
+        """Initializes satellite wit provided orbital elements. """
+        self.a = a
+        self.e = e
+        self.i = i
+        self.Omega = Omega
+        self.omega = omega
+        self.nu = nu
+        self.t = ti
+        self.output = output
+        self.R, self.V = kepler.elementsToRV(a, e, i, Omega, omega, nu)
+
+    def __write_output(self, writer):
+        """Writes orbital elements to file output
+        """
+
+        elements = self.a, self.e, self.i, self.Omega, self.omega, self.nu
+
+        # write headers to file
+        writer.write('     a                 e             i'
+                    + '           Omega         omega         nu\n')
+        writer.write('{:10.10f}{:14.10f}{:14.10f}{:14.10f}{:14.10f}'
+                    + '{:14.10f}\n'.format(*elements))
+
+    @staticmethod
+    def __accel(t, vi):
+        """Equation for acceleration: d2r/dt2 = -(mu/|r|^3)*r
+
+        """
 
         # magnitude of position vector
         r = norm(vi[:3])
@@ -36,44 +55,64 @@ def update_orbit(Ri, Vi, ti, tf, h, output=None):
 
         return v
 
-    # combine position and velocity vectors for RK44 routine
-    vi = list(Ri) + list(Vi)
+    def run_orbit(self, tf, h):
+        """Updates Keplerian orbit position
 
-    t, v = ti, list(vi)
+        :tf: Computation end time
+        :h: Time step
 
-    if output is not None:
-        with open('loe_sat.dat', 'w') as writer:
+        """
 
-            # write headers to file
-            writer.write('     a                 e             i'
-                         + '           Omega         omega         nu\n')
-            writer.write('{:10.10f}{:14.10f}{:14.10f}{:14.10f}{:14.10f}'
-                         + '{:14.10f}\n'.format(*elements0))
+        if self.output is None:
 
-            # step until time reaches final time
-            while t < tf:
+            # combine position and velocity vectors for RK44 routine
+            vi = list(self.R) + list(self.V)
 
-                # allow for h to change to ensure time stops at tf
-                # (if necessary)
-                hstep = min(h, tf-t)
+            # integration
+            self.t, v = rk44.rk44(fun=self.__accel, ti=self.t, vi=vi, tf=tf, h=h)
 
-                # perform Runge-Kutta integration step
-                t, v = __step(fun=accel, ti=t, vi=v, h=hstep)
+            self.R, self.V = np.array(v[:3]), np.array(v[3:])
 
-                # find elements from final position and velocity vectors
-                elements = rvToElements(v[:3], v[3:])
+        else:
+            with open(self.output, 'w') as writer:
 
-                # write orbital elements for time step to file
-                writer.write('{:10.10f}{:14.10f}{:14.10f}{:14.10f}'
-                             + '{:14.10f}{:14.10f}\n'.format(*elements))
+                # write headers to file
+                writer.write('     a                 e             i           Omega         omega         nu\n')
 
-    else:
+                # write initial orbital elements
+                self.__write_output(writer)
 
-        # integration
-        t, v = rk44(fun=accel, ti=ti, vi=vi, tf=tf, h=h)
+                # step until time reaches final time
+                while self.t < tf:
 
-    return t, v[:3], v[3:]
-        return t, v[:3], v[3:]
+                    # allow for h to change to ensure time stops at tf (if necessary)
+                    hstep = min(h, tf-self.t)
+
+                    self.update_orbit(h)
+                    # perform Runge-Kutta integration step
+                    self.update_orbit(hstep)
+
+                    # write orbital elements for time step to file
+                    self.__write_output(writer)
+
+    def update_orbit(self, h):
+        """Updates Keplerian orbit position
+        :h: Time step
+
+        """
+        # combine position and velocity vectors for RK44 routine
+        vi = list(self.R) + list(self.V)
+
+        t, v = self.t, list(vi)
+
+        # perform Runge-Kutta integration step
+        self.t, v = rk44.step(fun=self.__accel, ti=t, vi=v, h=h)
+
+        self.R, self.V = np.array(v[:3]), np.array(v[3:])
+
+        # find elements from final position and velocity vectors
+        self.a, self.e, self.i, self.Omega, self.omega, self.nu \
+            = rvToElements(self.R, self.V)
 
 
 if __name__ == "__main__":
@@ -93,6 +132,8 @@ if __name__ == "__main__":
 
     elements0 = [a0, e0, i0, Omega0, omega0, nu0]
 
+    loe_sat = LOE_Satellite(*elements0, output='loe_sat.dat')
+
     # initial position, velocity vectors
     R0, V0 = elementsToRV(a=a0, e=e0, i=i0, Omega=Omega0,
                           omega=omega0, nu=nu0)
@@ -102,15 +143,15 @@ if __name__ == "__main__":
 
     #################### Orbit Determination Error  ####################
     # compute new orbit position and velocity for final time
-    t, Rf, Vf = update_orbit(Ri=R0, Vi=V0, ti=t0, tf=tf, h=dt,
-                             output='loe_sat.dat')
+    loe_sat.run_orbit(tf=tf, h=dt)
 
     # compute error values position and velocity vectors
-    Rerr = Rf - R0
-    Verr = Vf - V0
+    Rerr = loe_sat.R - R0
+    Verr = loe_sat.V - V0
 
     # find elements from final position and velocity vectors
-    elements = rvToElements(Rf, Vf)
+    elements = loe_sat.a, loe_sat.e, loe_sat.i, \
+        loe_sat.Omega, loe_sat.omega, loe_sat.nu
 
     # compute error values for orbital elements
     errs = [el1 - el for el1, el in zip(elements, elements0)]
@@ -123,16 +164,16 @@ if __name__ == "__main__":
     print ' {:s}:  [ {:14.10f}  {:14.10f}  {:14.10f} ]'.format('V', *V0)
 
     print '\nFinal Conditions'
-    print ' {:s}:  [ {:14.10f}  {:14.10f}  {:14.10f} ]'.format('R', *Rf)
-    print ' {:s}:  [ {:14.10f}  {:14.10f}  {:14.10f} ]'.format('V', *Vf)
+    print ' {:s}:  [ {:14.10f}  {:14.10f}  {:14.10f} ]'.format('R', *loe_sat.R)
+    print ' {:s}:  [ {:14.10f}  {:14.10f}  {:14.10f} ]'.format('V', *loe_sat.V)
 
     print '\nDifference'
     print ' {:s}:  [ {:14.10g}  {:14.10g}  {:14.10g} ]'.format('R', *Rerr)
     print ' {:s}:  [ {:14.10g}  {:14.10g}  {:14.10g} ]'.format('V', *Verr)
 
     print '\nAbsolute Difference'
-    print ' {:s}:  {:14.10g}'.format('R', norm(Rf) - norm(R0))
-    print ' {:s}:  {:14.10g}'.format('V', norm(Vf) - norm(V0))
+    print ' {:s}:  {:14.10g}'.format('R', norm(loe_sat.R) - norm(R0))
+    print ' {:s}:  {:14.10g}'.format('V', norm(loe_sat.V) - norm(V0))
 
     print '\n          Orbital Elements'
     print '=========================================='
