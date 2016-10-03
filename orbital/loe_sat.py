@@ -27,12 +27,11 @@ class LOE_Satellite(object):
         """Writes orbital elements to file output
         """
 
-        elements = self.a, self.e, self.i, self.Omega, self.omega, self.nu
-
+        elements = self.t, self.a, self.e, self.i, self.Omega, self.omega, self.nu
 
         # write headers to file
-        writer.write(('{:10.10f}{:14.10f}{:14.10f}{:14.10f}{:14.10f}'
-                    + '{:14.10f}\n').format(*elements))
+        writer.write(('{:8.0f}{:18.10f}{:16.10f}{:16.10f}{:16.10f}{:16.10f}'
+                    + '{:16.10f}\n').format(*elements))
 
     @staticmethod
     def __accel(t, vi):
@@ -76,8 +75,8 @@ class LOE_Satellite(object):
             with open(self.output, 'w') as writer:
 
                 # write headers to file
-                writer.write('     a                 e             i          ' \
-                             + ' Omega         omega         nu\n')
+                writer.write('       t          a                 e               '
+                             'i             Omega          omega             nu\n')
 
                 # write initial orbital elements
                 self.__write_output(writer)
@@ -88,7 +87,6 @@ class LOE_Satellite(object):
                     # allow for h to change to ensure time stops at tf (if necessary)
                     hstep = min(h, tf-self.t)
 
-                    self.update_orbit(h)
                     # perform Runge-Kutta integration step
                     self.update_orbit(hstep)
 
