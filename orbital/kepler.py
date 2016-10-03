@@ -3,7 +3,8 @@
 import numpy as np
 
 # Gravitational parameter
-mu = 3.98600436e5  # km^3/s^2
+mu = 3.98600436e5   # km^3/s^2
+re = 6378.13        # km
 
 
 def __test_angle(test, angle):
