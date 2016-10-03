@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 
 
-def __compute_k(fun, ti, vi, h):
+def __compute_k(fun, ti, vi, h, *args):
     """Computes the k values for the rk44 method.
 
     :fun: ODE function, must be in the form of f(t, v), return v
@@ -22,15 +22,15 @@ def __compute_k(fun, ti, vi, h):
     k = []
 
     # compute values for k from fun = f(ti, vi)
-    k.append(h*np.array(fun(ti, vi)))
-    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2)))
-    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2)))
-    k.append(h*np.array(fun(ti+h, vi+k[-1])))
+    k.append(h*np.array(fun(ti, vi, *args)))
+    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2, *args)))
+    k.append(h*np.array(fun(ti+h/2, vi+k[-1]/2, *args)))
+    k.append(h*np.array(fun(ti+h, vi+k[-1], *args)))
 
     return np.array(k).T
 
 
-def step(fun, ti, vi, h):
+def step(fun, ti, vi, h, *args):
     """Performs a single step of rk44 integration for second order ode.
 
     :fun: ODE function, must be in the form of f(t, v)
@@ -42,7 +42,7 @@ def step(fun, ti, vi, h):
         :v: values at end of time step (as list)
 
     """
-    k = __compute_k(fun, ti, vi, h)
+    k = __compute_k(fun, ti, vi, h, *args)
 
     # weights of k's for rk44
     wts = [1, 2, 2, 1]
@@ -56,7 +56,7 @@ def step(fun, ti, vi, h):
     return t, list(v)
 
 
-def rk44(fun, ti, vi, tf, h=0.01):
+def rk44(fun, ti, vi, tf, h, *args):
     """Performs Runge-Kutta integration for second order ODE.
 
     :fun: ODE function, must be in the form of f(t, r, v)
@@ -80,7 +80,7 @@ def rk44(fun, ti, vi, tf, h=0.01):
         # allow for h to change to ensure time stops at tf (if necessary)
         hstep = min(h, tf-t)
 
-        t, v = step(fun, t, v, hstep)
+        t, v = step(fun, t, v, hstep, *args)
 
     return t, v
 
@@ -88,7 +88,7 @@ def rk44(fun, ti, vi, tf, h=0.01):
 if __name__ == "__main__":
 
     # second order ODE to solve
-    def fun(t, vi):
+    def fun(t, vi, test=False):
         vi = np.array(vi)
         v = np.zeros(len(vi))
         v[:3] = vi[3:]
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     #########################  rk44 solution #########################
     # call rk44 routine, store solution in t, r, v
-    t, v = rk44(fun, ti=ti, vi=vi, tf=tf, h=h)
+    t, v = rk44(fun, ti, vi, tf, h, True)
 
     print '\nRunge-Kutta solution (RK44), t = {}'.format(t)
     print 'r = [{:14.10f}  {:14.10f}  {:14.10f} ]'.format(*v[:3])
