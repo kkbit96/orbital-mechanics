@@ -7,7 +7,7 @@ mu = 3.98600436e5   # km^3/s^2
 re = 6378.13        # km
 
 
-def __test_angle(test, angle):
+def __test_angle__(test, angle):
     """Checks test for sign and returns corrected angle"""
     angle *= 180./np.pi
     if test > 0:
@@ -57,20 +57,20 @@ def rvToElements(Rvec, Vvec):
     Nvec = np.array([-hVec[1], hVec[0], 0])
     N = norm(Nvec)
     OmegaPi = np.arccos(-hVec[1]/N)
-    Omega = __test_angle(Nvec[1], OmegaPi)
+    Omega = __test_angle__(Nvec[1], OmegaPi)
 
     # Computation of omega (argument of periapsis)
     omegaPi = np.arccos(Nvec.dot(eVec)/(N*e))
-    omega = __test_angle(eVec[2], omegaPi)
+    omega = __test_angle__(eVec[2], omegaPi)
 
     # Computation of nu (true anomaly)
     nuPi = np.arccos(eVec.dot(Rvec)/(e*R))
-    nu = __test_angle(Rvec.dot(Vvec), nuPi)
+    nu = __test_angle__(Rvec.dot(Vvec), nuPi)
 
     return a, e, i, Omega, omega, nu
 
 
-def __transformationMatrix(i, Omega, omega):
+def __transformationMatrix__(i, Omega, omega):
     """Generates matrix for transformation from perifocal
     coordinate system to geocentric-equatorial coordinate
     system.
@@ -128,7 +128,7 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     rVec = r*np.array([np.cos(nu), np.sin(nu), 0])
     vVec = np.sqrt(mu/p)*np.array([-np.sin(nu), e + np.cos(nu), 0])
 
-    T = __transformationMatrix(i, Omega, omega)
+    T = __transformationMatrix__(i, Omega, omega)
 
     Rvec = T.dot(rVec)
     Vvec = T.dot(vVec)

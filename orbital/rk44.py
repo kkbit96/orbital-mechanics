@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 
 
-def __compute_k(fun, ti, vi, h, *args):
+def __compute_k__(fun, ti, vi, h, *args):
     """Computes the k values for the rk44 method.
 
     :fun: ODE function, must be in the form of f(t, v), return v
@@ -42,7 +42,7 @@ def step(fun, ti, vi, h, *args):
         :v: values at end of time step (as list)
 
     """
-    k = __compute_k(fun, ti, vi, h, *args)
+    k = __compute_k__(fun, ti, vi, h, *args)
 
     # weights of k's for rk44
     wts = [1, 2, 2, 1]
