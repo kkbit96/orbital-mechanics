@@ -136,7 +136,7 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     return Rvec, Vvec
 
 
-def __main():
+def __main__():
     names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
 
     # First problem
@@ -191,7 +191,7 @@ def __main():
     print ' {:s}:  [ {:14.8f}  {:14.8f}  {:14.8f} ]'.format('V', *V2)
 
 
-def __test():
+def __test__():
     names = ['a', 'e', 'i', 'Omega', 'omega', 'nu']
 
     # First problem
@@ -257,6 +257,6 @@ def __test():
 
 
 if __name__ == "__main__":
-    __main()
+    __main__()
     print '\n\n'
-    __test()
+    __test__()
