@@ -31,6 +31,15 @@ class LOE_Satellite(object):
         self.output = output
         self.R, self.V = kepler.elementsToRV(a, e, i, Omega, omega, nu)
         self.n = [0]
+        self.__fun__ = self.__accel__
+
+
+    def set_accel(self, fun):
+        """Sets function for acceleration to be used in RK44 routine
+
+        :fun: function to use for acceleration, must take t, vi and deg as arguments
+        """
+        self.__fun__ = fun
 
     def setPertDegree(self, n=[0]):
         """Sets the list of degrees for the perturbations for the orbit acceleration.
@@ -109,7 +118,7 @@ class LOE_Satellite(object):
             vi = list(self.R) + list(self.V)
 
             # integration
-            self.t, v = rk44.rk44(fun=self.__fun, ti=self.t, vi=vi, tf=tf, h=h)
+            self.t, v = rk44.rk44(fun=self.__fun__, ti=self.t, vi=vi, tf=tf, h=h)
 
             self.R, self.V = np.array(v[:3]), np.array(v[3:])
 
@@ -147,7 +156,7 @@ class LOE_Satellite(object):
         t, v = self.t, list(vi)
 
         # perform Runge-Kutta integration step
-        self.t, v = rk44.step(self.__accel__, t, v, h, self.n)
+        self.t, v = rk44.step(self.__fun__, t, v, h, self.n)
 
         self.R, self.V = np.array(v[:3]), np.array(v[3:])
 
@@ -284,8 +293,8 @@ if __name__ == "__main__":
         else:
             data[str(pert_orders)] = datum
 
-#     twobody = data['0']
-#     time = [t/3600 for t in twobody['t']]
+    twobody = data['0']
+    time = [t/3600 for t in twobody['t']]
 
     for key, datum in sorted(data.iteritems()):
         if key != '0':
