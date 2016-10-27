@@ -35,9 +35,8 @@ class Planet(object):
         return jd
 
     def __import_ephemerides__(self, planet):
-        """Import planetary ephemeride tables from specified file (defaults to ephemerides.txt).
+        """Import planetary ephemeride tables from package ephemerides file
 
-        :filename: file name containing ephemeride information
         :returns: dict of ephemeride information
 
         """
