@@ -7,16 +7,17 @@ class Planet(object):
     """Class representing a planetary body, with orbital elements position and velocity vectors."""
     from datetime import datetime
 
-    def __init__(self, planet, date_time):
+    def __init__(self, name, date_time):
         """Initializes planetary object, importing ephemeride data and setting initial orbital
         elements and position and velocity vectors.
 
-        :planet: planet to be modelled
-        :date_time: datetime object representing initial or current time
+        :name: name of planet to be modelled
+        :date_time: tuple or list with date and time representing initial or current time
+                    format: (YEAR, MONTH, DAY, HOUR, MINUTE)
 
         """
 
-        self.name = planet.upper()
+        self.name = name.upper()
         self.juliandate = self.julian_date(*date_time)
         self.__import_ephemerides__(self.name)
         self.__compute_vectors__()
