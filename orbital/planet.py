@@ -43,8 +43,8 @@ class Planet(object):
 
         import os
 
-        directory = os.split(__file__)[0]
-        filename = os.join(directory, 'ephemerides')
+        directory = os.path.split(__file__)[0]
+        filename = os.path.join(directory, 'ephemerides')
 
         ephemerides = {}
         with open(filename, 'r') as ephemeride_file:
