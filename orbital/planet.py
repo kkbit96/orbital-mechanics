@@ -5,7 +5,6 @@ au = 149597870.691      # km
 class Planet(object):
 
     """Class representing a planetary body, with orbital elements position and velocity vectors."""
-    from datetime import datetime
 
     def __init__(self, name, date_time):
         """Initializes planetary object, importing ephemeride data and setting initial orbital
