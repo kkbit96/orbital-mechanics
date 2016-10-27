@@ -34,13 +34,19 @@ class Planet(object):
 
         return jd
 
-    def __import_ephemerides__(self, planet, filename='ephemerides'):
+    def __import_ephemerides__(self, planet):
         """Import planetary ephemeride tables from specified file (defaults to ephemerides.txt).
 
         :filename: file name containing ephemeride information
         :returns: dict of ephemeride information
 
         """
+
+        import os
+
+        directory = os.split(__file__)[0]
+        filename = os.join(directory, 'ephemerides')
+
         ephemerides = {}
         with open(filename, 'r') as ephemeride_file:
             for line in ephemeride_file:
