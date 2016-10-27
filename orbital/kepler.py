@@ -3,20 +3,22 @@
 import numpy as np
 
 # Gravitational parameter
-mu = 3.98600436e5   # km^3/s^2
-re = 6378.13        # km
+mu_earth = 3.98600436e5   # km^3/s^2
+mu_sun = 1.3271240018e11  # km^3/s^2
+re = 6378.137       # km
 
 
 def __test_angle__(test, angle):
     """Checks test for sign and returns corrected angle"""
-    angle *= 180./np.pi
+    angle = np.rad2deg(angle)
+
     if test > 0:
         return angle
     elif test < 0:
         return 360. - angle
 
 
-def rvToElements(Rvec, Vvec):
+def rvToElements(Rvec, Vvec, mu=mu_earth):
     """Computes the Keplerian orbital elements of an Earth
     satellite using the geocentric-equatorial position and
     velocity vectors of the orbiting body.
@@ -51,7 +53,7 @@ def rvToElements(Rvec, Vvec):
     a = p/(1-e**2)
 
     # Computation of i (inclination)
-    i = np.arccos(hVec[2]/h)*180./np.pi
+    i = np.rad2deg(np.arccos(hVec[2]/h))
 
     # Computation of Omega (longitude of ascending node)
     Nvec = np.array([-hVec[1], hVec[0], 0])
@@ -84,9 +86,9 @@ def __transformationMatrix__(i, Omega, omega):
     """
     from numpy import sin, cos
 
-    i *= np.pi/180.
-    Omega *= np.pi/180.
-    omega *= np.pi/180.
+    i = np.deg2rad(i)
+    Omega = np.deg2rad(Omega)
+    omega = np.deg2rad(omega)
 
     T = np.zeros((3, 3))
 
@@ -105,7 +107,7 @@ def __transformationMatrix__(i, Omega, omega):
     return T
 
 
-def elementsToRV(a, e, i, Omega, omega, nu):
+def elementsToRV(a, e, i, Omega, omega, nu, mu=mu_earth):
     """Computes the geocentric-equatorial position and velocity
     vectors of an Earth satellite using the Keplerian orbital
     elements.
@@ -120,8 +122,8 @@ def elementsToRV(a, e, i, Omega, omega, nu):
     :Rvec:  position vector to orbiting body
     :Vvec:  velocity vector of orbiting body
     """
-    # Conversion of angles from degrees to radians
-    nu *= np.pi/180.
+    # Conversion of nu from degrees to radians
+    nu = np.deg2rad(nu)
 
     p = a*(1 - e**2)
     r = p/(1 + e*np.cos(nu))

@@ -5,7 +5,8 @@ from numpy.linalg import norm
 
 import rk44
 import kepler
-from kepler import mu, re, rvToElements
+from kepler import mu_earth as mu
+from kepler import re, rvToElements
 
 J = (-1.0,                      # J0
       0.0,                      # J1
@@ -20,7 +21,7 @@ class LOE_Satellite(object):
     velocity vectors as well as the orbital elements for a low earth satellite."""
 
     def __init__(self, a, e, i, Omega, omega, nu, ti=0, output=None):
-        """Initializes satellite wit provided orbital elements. """
+        """Initializes satellite with provided orbital elements. """
         self.a = a
         self.e = e
         self.i = i
