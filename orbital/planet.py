@@ -29,12 +29,10 @@ class Planet(object):
         :returns: Julian date number.
 
         """
-        # j0 = 367*year - int(7*(year + int((month+9)/12))/4) + int(275*month/9) + day + 1721013.5
         j0 = 367*year - np.floor(7*(year + np.floor((month+9)/12))/4) + np.floor(275*month/9) + day + 1721013.5
         jd = j0 + hour/24. + (minute+5/60.)/1440.
 
         return jd
-
 
     def __import_ephemerides__(self, planet, filename='ephemerides'):
         """Import planetary ephemeride tables from specified file (defaults to ephemerides.txt).
@@ -85,8 +83,6 @@ class Planet(object):
         err = 1
         while abs(err) > 1e-10:
             E_old = E
-            # E = (M + e*np.sin(E))
-            # err = E - E_old
             err = (E - e*np.sin(E) - M)/(1-e*np.cos(E))
             E = E - err
 
