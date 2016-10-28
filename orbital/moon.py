@@ -12,6 +12,10 @@ class Moon(Planet):
         :returns: dict of ephemeride information
 
         """
+        import os
+
+        directory = os.path.split(__file__)[0]
+
         ephemerides = {
             'Lprime': [218.3164477, 481267.88123421, -0.0015786, 1/538841., -1/6.5194e7],
             'D': [297.8501921, 445267.1114034, -0.0018819, 1/545868., -1/1.13065e8],
@@ -30,7 +34,8 @@ class Moon(Planet):
         moon_files = 'moon_nutation_obliquity', 'moon_longitude_distance', 'moon_latitude'
         for moon_file in moon_files:
 
-            with open(moon_file, 'r') as ephemeride_file:
+            filename = os.path.join(directory, moon_file)
+            with open(filename, 'r') as ephemeride_file:
                 table = []
 
                 for line in ephemeride_file:
@@ -55,7 +60,7 @@ class Moon(Planet):
         self.ephemerides = ephemerides
 
     @staticmethod
-    def __table_calcs__(arguments, table, T, ecc_anomaly=1):
+    def __table_calcs__(arguments, table, T, E=1):
 
         from numpy.polynomial.polynomial import polyval
 
@@ -66,9 +71,9 @@ class Moon(Planet):
             arg = np.deg2rad(sum([f*a for f, a in zip(factors, arguments)]))
 
             if abs(factors[1]) == 1:
-                mult = ecc_anomaly
+                mult = E
             elif abs(factors[1]) == 2:
-                mult = ecc_anomaly**2
+                mult = E**2
             else:
                 mult = 1
 
@@ -85,22 +90,22 @@ class Moon(Planet):
 
         T = (self.juliandate - 2451545.0)/36525.0
 
-        Lprime = polyval(T, self.ephemerides['Lprime']) # % 360
+        Lprime = polyval(T, self.ephemerides['Lprime'])
         D = polyval(T, self.ephemerides['D'])
-        M = polyval(T, self.ephemerides['M']) # % 360
-        Mprime = polyval(T, self.ephemerides['Mprime']) # % 360
-        F = polyval(T, self.ephemerides['F']) # % 360
-        Omega = polyval(T, self.ephemerides['Omega']) # % 360
-        L = polyval(T, self.ephemerides['L']) # % 360
-        A1 = polyval(T, self.ephemerides['A1']) # % 360
-        A2 = polyval(T, self.ephemerides['A2']) # % 360
-        A3 = polyval(T, self.ephemerides['A3']) # % 360
-        E = polyval(T, self.ephemerides['E']) # % 360
+        M = polyval(T, self.ephemerides['M'])
+        Mprime = polyval(T, self.ephemerides['Mprime'])
+        F = polyval(T, self.ephemerides['F'])
+        Omega = polyval(T, self.ephemerides['Omega'])
+        # L = polyval(T, self.ephemerides['L'])
+        A1 = polyval(T, self.ephemerides['A1'])
+        A2 = polyval(T, self.ephemerides['A2'])
+        A3 = polyval(T, self.ephemerides['A3'])
+        E = polyval(T, self.ephemerides['E'])
 
         args = [D, M, Mprime, F, Omega]
 
         # Computation of delta psi for lunar nutation
-        delta_psi, delta_eps = self.__table_calcs__(args, self.ephemerides['nutation'], T, 1)
+        delta_psi, delta_eps = self.__table_calcs__(args, self.ephemerides['nutation'], T, E)
 
         # Computation of periodic permutations of longitude and distance
         sigma_l, sigma_r = self.__table_calcs__(args, self.ephemerides['longitude'], T, E)
@@ -112,7 +117,7 @@ class Moon(Planet):
         sigma_b += -2.235*sin(deg2rad(Lprime)) + 382*sin(deg2rad(A3)) + 175*sin(deg2rad(A1-F)) \
             + 175*sin(deg2rad(A1+F)) + 127*sin(deg2rad(Lprime - Mprime)) - 115*sin(deg2rad(Lprime+Mprime))
 
-        lam = (Lprime + sigma_l*1e-6 + delta_psi) % 360
+        lam = (Lprime + sigma_l*1.0e-6 + delta_psi/3600.e4)
         beta = (sigma_b*1e-6) % 360
         delta = 385000.56 + sigma_r*1e-3
 
@@ -122,7 +127,7 @@ class Moon(Planet):
         cos_lambda = cos(deg2rad(lam))
         sin_lambda = sin(deg2rad(lam))
 
-        self.R = [delta*cos_beta*cos_lambda, delta*cos_beta*sin_lambda, delta*sin_beta]
+        self.R = delta*np.array([cos_beta*cos_lambda, cos_beta*sin_lambda, sin_beta])
 
     def update_orbit(self, dt):
         """Updates orbit for one time step of dt
