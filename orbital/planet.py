@@ -16,7 +16,7 @@ class Planet(object):
 
         """
 
-        self.name = name.upper()
+        self.name = name.capitalize()
         self.juliandate = self.julian_date(*date_time)
         self.__import_ephemerides__(self.name)
         self.__compute_vectors__()
@@ -53,7 +53,7 @@ class Planet(object):
                 if len(row) == 0:
                     pass
                 elif len(row) == 1:
-                    name = row[0]
+                    name = row[0].capitalize()
                 else:
                     if planet == name:
                         ephemerides[row[0]] = [float(num) for num in row[1:]]
