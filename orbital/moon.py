@@ -90,44 +90,64 @@ class Moon(Planet):
 
         T = (self.juliandate - 2451545.0)/36525.0
 
-        Lprime = polyval(T, self.ephemerides['Lprime'])
-        D = polyval(T, self.ephemerides['D'])
-        M = polyval(T, self.ephemerides['M'])
-        Mprime = polyval(T, self.ephemerides['Mprime'])
-        F = polyval(T, self.ephemerides['F'])
-        Omega = polyval(T, self.ephemerides['Omega'])
-        # L = polyval(T, self.ephemerides['L'])
-        A1 = polyval(T, self.ephemerides['A1'])
-        A2 = polyval(T, self.ephemerides['A2'])
-        A3 = polyval(T, self.ephemerides['A3'])
-        E = polyval(T, self.ephemerides['E'])
+        self.Lprime = polyval(T, self.ephemerides['Lprime']) % 360
+        self.D = polyval(T, self.ephemerides['D']) % 360
+        self.M = polyval(T, self.ephemerides['M']) % 360
+        self.Mprime = polyval(T, self.ephemerides['Mprime']) % 360
+        self.F = polyval(T, self.ephemerides['F']) % 360
+        self.Omega = polyval(T, self.ephemerides['Omega']) % 360
+        # self.L = polyval(T, self.ephemerides['L'])
+        self.A1 = polyval(T, self.ephemerides['A1']) % 360
+        self.A2 = polyval(T, self.ephemerides['A2']) % 360
+        self.A3 = polyval(T, self.ephemerides['A3']) % 360
+        self.E = polyval(T, self.ephemerides['E'])
 
-        args = [D, M, Mprime, F, Omega]
+
+        args = [self.D, self.M, self.Mprime, self.F, self.Omega]
 
         # Computation of delta psi for lunar nutation
-        delta_psi, delta_eps = self.__table_calcs__(args, self.ephemerides['nutation'], T, E)
+        self.delta_psi, self.delta_eps = \
+            self.__table_calcs__(args, self.ephemerides['nutation'], T, self.E)
+
+        self.delta_psi /= 3600e4
+        self.delta_eps /= 3600e4
 
         # Computation of periodic permutations of longitude and distance
-        sigma_l, sigma_r = self.__table_calcs__(args, self.ephemerides['longitude'], T, E)
+        self.sigma_l, self.sigma_r = \
+            self.__table_calcs__(args, self.ephemerides['longitude'], T, self.E)
 
         # Computation of periodic permutations of latitude
-        sigma_b, = self.__table_calcs__(args, self.ephemerides['latitude'], T, E)
+        self.sigma_b, = \
+            self.__table_calcs__(args, self.ephemerides['latitude'], T, self.E)
 
-        sigma_l += 3958*sin(deg2rad(A1)) + 1962*sin(deg2rad(Lprime-F)) + 318*sin(deg2rad(A2))
-        sigma_b += -2.235*sin(deg2rad(Lprime)) + 382*sin(deg2rad(A3)) + 175*sin(deg2rad(A1-F)) \
-            + 175*sin(deg2rad(A1+F)) + 127*sin(deg2rad(Lprime - Mprime)) - 115*sin(deg2rad(Lprime+Mprime))
+        # Conversion for angles necessary for additional terms
+        Lprime = np.deg2rad(self.Lprime)
+        Mprime = np.deg2rad(self.Mprime)
+        F = np.deg2rad(self.F)
+        A1 = np.deg2rad(self.A1)
+        A2 = np.deg2rad(self.A2)
+        A3 = np.deg2rad(self.A3)
 
-        lam = (Lprime + sigma_l*1.0e-6 + delta_psi/3600.e4)
-        beta = (sigma_b*1e-6) % 360
-        delta = 385000.56 + sigma_r*1e-3
+        self.sigma_l += 3958*sin(A1) + 1962*sin(Lprime-F) + 318*sin(A2)
+        self.sigma_l *= 1e-6
 
-        cos_beta = cos(deg2rad(beta))
-        sin_beta = sin(deg2rad(beta))
+        self.sigma_b += -2.235*sin(Lprime) + 382*sin(A3) + 175*sin(A1-F) \
+            + 175*sin(A1+F) + 127*sin(Lprime-Mprime) - 115*sin(Lprime+Mprime)
+        self.sigma_b *= 1e-6
 
-        cos_lambda = cos(deg2rad(lam))
-        sin_lambda = sin(deg2rad(lam))
+        self.sigma_r *= 1e-3
 
-        self.R = delta*np.array([cos_beta*cos_lambda, cos_beta*sin_lambda, sin_beta])
+        self.lam = (self.Lprime + self.sigma_l + self.delta_psi) % 360
+        self.beta = self.sigma_b % 360
+        self.delta = 385000.56 + self.sigma_r
+
+        cos_beta = cos(deg2rad(self.beta))
+        sin_beta = sin(deg2rad(self.beta))
+
+        cos_lambda = cos(deg2rad(self.lam))
+        sin_lambda = sin(deg2rad(self.lam))
+
+        self.R = self.delta*np.array([cos_beta*cos_lambda, cos_beta*sin_lambda, sin_beta])
 
     def update_orbit(self, dt):
         """Updates orbit for one time step of dt

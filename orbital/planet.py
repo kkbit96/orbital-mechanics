@@ -22,7 +22,7 @@ class Planet(object):
         self.__compute_vectors__()
 
     @staticmethod
-    def julian_date(year, month, day, hour, minute):
+    def julian_date(year, month, day, hour, minute, seconds):
         """Computes Julian date for specified date vector.
 
         :date_time: list or tuple with year, month, day, hour, minute
@@ -30,7 +30,7 @@ class Planet(object):
 
         """
         j0 = 367*year - np.floor(7*(year + np.floor((month+9)/12))/4) + np.floor(275*month/9) + day + 1721013.5
-        jd = j0 + hour/24. + (minute+5/60.)/1440.
+        jd = j0 + hour/24. + (minute+seconds/60.)/1440.
 
         return jd
 
@@ -68,34 +68,36 @@ class Planet(object):
 
         T = (self.juliandate - 2451545.0)/36525.0
 
-        L = polyval(T, self.ephemerides["L"]) % 360
-        i = polyval(T, self.ephemerides["i"])
-        Omega = polyval(T, self.ephemerides["Omega"]) % 360
-        pi = polyval(T, self.ephemerides["pi"])
-        a = polyval(T, self.ephemerides["a"]) * au
-        e = polyval(T, self.ephemerides["e"])
+        self.L = polyval(T, self.ephemerides["L"]) % 360
+        self.i = polyval(T, self.ephemerides["i"]) % 360
+        self.Omega = polyval(T, self.ephemerides["Omega"]) % 360
+        self.pi = polyval(T, self.ephemerides["pi"]) % 360
+        self.a = polyval(T, self.ephemerides["a"]) * au
+        self.e = polyval(T, self.ephemerides["e"])
 
-        omega = pi - Omega
+        self.omega = (self.pi - self.Omega) % 360
         if self.name == 'PLUTO':
-            M = (L - pi - 0.01262724 * T**2)
+            self.M = (self.L - self.pi - 0.01262724 * T**2) % 360
         else:
-            M = (L - pi)
+            self.M = (self.L - self.pi) % 360
 
-        M = np.deg2rad(M % 360)
+        M = np.deg2rad(self.M)
 
-        E = M + e * np.sin(M)
+        E = M + self.e * np.sin(M)
 
         err = 1
         while abs(err) > 1e-10:
             E_old = E
-            err = (E - e*np.sin(E) - M)/(1-e*np.cos(E))
+            err = (E - self.e*np.sin(E) - M)/(1-self.e*np.cos(E))
             E = E - err
 
-        nu = 2*np.arctan(np.sqrt((1+e)/(1-e))*np.tan(E/2))
+        nu = 2*np.arctan(np.sqrt((1+self.e)/(1-self.e))*np.tan(E/2))
 
-        nu = np.rad2deg(nu)
+        self.E = np.rad2deg(E) % 360
+        self.nu = np.rad2deg(nu) % 360
 
-        self.R, self.V = elementsToRV(a, e, i, Omega, omega, nu, mu_sun)
+        self.R, self.V = elementsToRV(self.a, self.e, self.i, self.Omega,
+                                      self.omega, self.nu, mu_sun)
 
     def update_orbit(self, dt):
         """Updates orbit for one time step of dt
