@@ -8,7 +8,7 @@ mu_sun = 1.3271240018e11  # km^3/s^2
 re = 6378.137       # km
 
 
-def julian_date(year, month, day, hour, minute, seconds):
+def julian_date(year, month, day, hour=0, minute=0, seconds=0):
     """Computes Julian date for specified date vector.
 
     :date_time: list or tuple with year, month, day, hour, minute
