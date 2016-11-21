@@ -8,6 +8,19 @@ mu_sun = 1.3271240018e11  # km^3/s^2
 re = 6378.137       # km
 
 
+def julian_date(year, month, day, hour, minute, seconds):
+    """Computes Julian date for specified date vector.
+
+    :date_time: list or tuple with year, month, day, hour, minute
+    :returns: Julian date number.
+
+    """
+    j0 = 367*year - np.floor(7*(year + np.floor((month+9)/12))/4) + np.floor(275*month/9) + day + 1721013.5
+    jd = j0 + hour/24. + (minute+seconds/60.)/1440.
+
+    return jd
+
+
 def __test_angle__(test, angle):
     """Checks test for sign and returns corrected angle"""
     angle = np.rad2deg(angle)

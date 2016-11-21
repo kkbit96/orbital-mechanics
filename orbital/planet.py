@@ -1,5 +1,7 @@
 import numpy as np
 
+from kepler import julian_date
+
 au = 149597870.691      # km
 
 class Planet(object):
@@ -15,24 +17,10 @@ class Planet(object):
                     format: (YEAR, MONTH, DAY, HOUR, MINUTE)
 
         """
-
         self.name = name.capitalize()
-        self.juliandate = self.julian_date(*date_time)
+        self.juliandate = julian_date(*date_time)
         self.__import_ephemerides__(self.name)
         self.__compute_vectors__()
-
-    @staticmethod
-    def julian_date(year, month, day, hour, minute, seconds):
-        """Computes Julian date for specified date vector.
-
-        :date_time: list or tuple with year, month, day, hour, minute
-        :returns: Julian date number.
-
-        """
-        j0 = 367*year - np.floor(7*(year + np.floor((month+9)/12))/4) + np.floor(275*month/9) + day + 1721013.5
-        jd = j0 + hour/24. + (minute+seconds/60.)/1440.
-
-        return jd
 
     def __import_ephemerides__(self, planet):
         """Import planetary ephemeride tables from package ephemerides file
